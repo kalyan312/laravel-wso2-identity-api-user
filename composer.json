@@ -1,0 +1,36 @@
+{
+  "name": "khbd/laravel-wso2-identity-api-user",
+  "description": "Laravel wso2 identity api user is a Laravel Package for WSO2 IDP user",
+  "license": "MIT",
+  "type": "library",
+  "require": {
+    "php": "^7.2"
+  },
+  "authors": [
+    {
+      "name": "Kalyan Halder",
+      "email": "kalyanhalder0@gmail.com",
+      "homepage": "https://github.com/kalyan312",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Khbd\\LaravelWso2IdentityApiUser\\": "src/"
+    },
+    "files": [
+      "src/helpers.php"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "IdpUserServiceProvider"
+      ],
+      "aliases": {
+        "IdpUser": "Khbd\\LaravelWso2IdentityApiUser\\Facades\\IdpUser"
+      }
+    }
+  },
+  "minimum-stability": "dev"
+}
