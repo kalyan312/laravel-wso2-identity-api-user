@@ -34,7 +34,7 @@ class MakeIdpDriverCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return __DIR__.'/stubs/gateway.stub';
+        return __DIR__.'/stubs/sdk.stub';
     }
 
     /**
@@ -46,6 +46,6 @@ class MakeIdpDriverCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Idps';
+        return $rootNamespace.'\SDK';
     }
 }

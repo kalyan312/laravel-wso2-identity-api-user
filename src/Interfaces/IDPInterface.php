@@ -14,21 +14,6 @@ interface IDPInterface
     public function __construct($settings);
 
     /**
-     * @param array $userInformation
-     *
-     * @return mixed
-     */
-    public function create(array $userInformation);
-
-
-    /**
-     * @param array $userInformation
-     *
-     * @return mixed
-     */
-    public function update(array $userInformation);
-
-    /**
      * define when the a message is successfully sent.
      *
      * @return bool
@@ -41,13 +26,6 @@ interface IDPInterface
      * @return mixed
      */
     public function getUserID();
-
-    /**
-     *  the message API response
-     *
-     * @return object
-     */
-    public function getResponseBody();
 
     /**
      * the message API response code

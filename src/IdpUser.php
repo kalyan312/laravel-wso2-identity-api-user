@@ -4,8 +4,7 @@ namespace Khbd\LaravelWso2IdentityApiUser;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Khbd\LaravelWso2IdentityApiUser\Models\SmsHistory;
-
+use  Khbd\LaravelWso2IdentityApiUser\SDK\Wso2Idp\Wso2Idp;
 
 
 class IdpUser
@@ -36,7 +35,6 @@ class IdpUser
      */
     protected $object = null;
 
-
     /**
      * @var array
      */
@@ -55,16 +53,22 @@ class IdpUser
         $this->mapGateway();
     }
 
+    public function __call($function, $args)
+    {
+            $payload = empty($args) ? [$this->payload]: $args;
+            return call_user_func_array([$this->object, $function], $payload);
+    }
+
     /**
-     * Change the gateway on the fly.
+     * Change the sdk on the fly.
      *
-     * @param $gateway
+     * @param $sdk
      *
      * @return $this
      */
-    public function gateway($gateway)
+    public function use($sdk)
     {
-        $this->gateway = $gateway;
+        $this->gateway = $sdk;
         $this->mapGateway();
 
         return $this;
@@ -83,119 +87,24 @@ class IdpUser
         return $this;
     }
 
+    /****************
+     * Private functions
+     */
+
     /**
      *map the gateway that will be used to send.
      */
     private function mapGateway()
     {
         $this->settings = $this->config['gateways'][$this->gateway];
+        $this->settings['idp_log'] = $this->config['idp_log'];
         $class = $this->config['map'][$this->gateway];
-        $this->object = new $class($this->settings);
-    }
 
-    /**
-     * @param $recipient
-     * @param $message
-     * @param null $params
-     *
-     * @return mixed
-     */
-    public function request($recipient, $message, $params = null)
-    {
-        if($this->config['sms_activate'] == false) {
-            return false;
-        }
-        if($this->config['sms_log']) {
-            $this->beforeSend($recipient, $message, $params = null);
-        }
-        if(method_exists($this->object, 'fixNumber') && !$recipient = $this->object->fixNumber($recipient)){
-            return false;
-        }
-        $object = $this->object->send($recipient, $message, $params);
-        if($this->config['sms_log']) {
-            $this->afterSend();
+        if(is_callable([$class, '__construct'], true, $callable_name)){
+            $this->object = new $class($this->settings);
+        }else{
+            throw new \Exception("Unknown SDK. Make sure you have defined the sdk in the config file.", 422);
         }
 
-        return $object;
-    }
-
-    /**
-     * define when the a message is successfully sent.
-     *
-     * @return bool
-     */
-    public function is_successful()
-    {
-        return $this->object->is_successful();
-    }
-
-    /**
-     * return api response getResponseBody
-     *
-     * @return object | array
-     */
-    public function getResponseBody()
-    {
-        return $this->object->getResponseBody();
-    }
-
-    /**
-     * the message ID as received on the response.
-     *
-     * @return mixed
-     */
-    public function getMessageID()
-    {
-        return $this->object->getMessageID();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getBalance()
-    {
-        return $this->object->getBalance();
-    }
-
-    /**
-     * @param Request $request
-     *
-     * @return mixed
-     */
-    public function getDeliveryReports(Request $request)
-    {
-        return $this->object->getDeliveryReports($request);
-    }
-
-    private function beforeSend($recipient, $message, $params = null){
-        try{
-            $history = new SmsHistory();
-            $history->mobile_number = $recipient;
-            $history->message = $message;
-            $history->gateway = $this->gateway;
-            $history->created_at = now();
-            $history->save();
-            $this->smsRecord = $history;
-        } catch (\Exception $exception){
-            Log::debug("Faild to save sms message. " . $exception->getMessage());
-        }
-    }
-    private function afterSend(){
-        try{
-            $status = 2;
-            if($this->is_successful()){
-                $status = 1;
-            }
-
-            if(is_object($this->smsRecord)){
-                $this->smsRecord->status = $status;
-                $this->smsRecord->sms_submitted_id = $this->getMessageID();
-                $this->smsRecord->api_response = json_encode($this->getResponseBody());
-                $this->smsRecord->save();
-            }
-
-        }catch (\Exception $exception){
-            $exception->getMessage();
-        }
     }
 }

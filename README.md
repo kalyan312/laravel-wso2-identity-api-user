@@ -40,6 +40,109 @@ or using helper
 IdpUser()->create(array());
 ```
 
+# Create you SDK
+Run this command to create your own sdk class.
+```
+ php artisan make:idpdriver YourSDKName
+```
+Now add the class in config idpUser.php config file.
+
+# API references
+### Here all covered API references 
+
+>1. Get Wso2 IDP User by ID
+
+```
+IdpUser()->setPayload('userID')->userInfo()->get();
+```
+or to get only response body
+
+```
+IdpUser()
+->use('wso2idp')
+->setPayload('userID')
+->userInfo()
+->onlyBody()
+->get();
+```
+Here - 
+
+-----
+
+```use('yourSDK')``` `optional` set your custom SDK.
+
+```onlyBody()``` `optional` return only response from IDP server/end API
+
+----
+
+
+```get()``` return response as `array`
+
+```asObject()``` return response as `object`
+
+```asJson()``` return response as `json`
+
+----
+
+>2. Create IDP user and get created user info
+
+```
+        $response = IdpUser()->setPayload([
+        'first_name' => 'Kalyan',
+        'last_name' => 'Kalyan',
+        'username' => 'Kalyan4',
+        'email' => 'Kalyan4@gmail.com',
+        'mobile' => '01945602071',
+        'user_type' => '2',
+        'active' => true,
+        'department' => 'Kalyan',
+        ])->create()->get();
+```
+
+>3. Update User By User ID
+
+_you can provide single field or multiple field at the same time_
+
+```
+        $response = IdpUser()->setPayload([
+        'id' =>'UserID',
+        'username' => 'Kalyan3',
+        'account_status' => 1,
+        'mobile' => '01945602071'
+        ])->update()->get();
+```
+here `id` and `username` is mendatory. You can provide following field to update & create - 
+
+| Key | Details |
+| ------ | ------ |
+| first_name | Update `givenName` |
+| last_name | [Update `familyName` |
+| email | Update  `emails` |
+| mobile | Update `phoneNumbers` |
+| user_type | Update `userType`|
+| account_status | Update `accountStatus` |
+| department | Update `department` |
+| organization | Update `organization` |
+| country | Update `country` |
+| password | Update `password` |
+
+
+>4. Delete single/bulk IDP User
+
+```
+        $userID = 'ID';
+        $response = IdpUser()
+        ->use('wso2idp')
+        ->setPayload($userID)
+        ->delete()
+        ->get();
+
+```
+here - `$userID` can be single user ID or array of user ID. 
+
+
+
+
 ## Adding new Gateway
 
 ## .env Config

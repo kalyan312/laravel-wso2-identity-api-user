@@ -3,14 +3,11 @@
 namespace Khbd\LaravelWso2IdentityApiUser\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use phpDocumentor\Reflection\Types\Mixed_;
 
 /**
- * @method static gateway(string $gateway)
- * @method static send(string $recipient, string $message, $params = null)
- * @method static bool is_successful()
- * @method static getMessageID()
- * @method static getBalance()
- * @method static object getDeliveryReports(\Illuminate\Http\Request $request)
+ * @method static use(string $sdk)
+ * @method static setPayload($payload)
  *
  * @see \Khbd\LaravelWso2IdentityApiUser\IdpUser
  */

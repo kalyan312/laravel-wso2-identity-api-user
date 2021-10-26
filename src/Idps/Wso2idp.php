@@ -3,7 +3,7 @@
 namespace Khbd\LaravelWso2IdentityApiUser\Idps;
 
 use Khbd\LaravelWso2IdentityApiUser\Interfaces\IDPInterface;
-use Khbd\LaravelWso2IdentityApiUser\SDK\Wso2Idp\Wso2Idp as IDPGateway;
+use Khbd\LaravelWso2IdentityApiUser\SDK\Wso2Idp\Wso2IdpUsers;
 use Illuminate\Http\Request;
 
 class Wso2idp implements IDPInterface
@@ -32,15 +32,33 @@ class Wso2idp implements IDPInterface
      */
     protected $message;
 
+
+    /**
+     * @var mixed
+     */
+    protected $onlyBody;
+
     /**
      * @var object
      */
-    public $data;
+    protected $asObject;
+
+    /**
+     * @var json
+     */
+    protected $asJson;
+
+    /**
+     * @var object
+     */
+    protected $data;
 
     /**
      * @var object | array
      */
-    public $response;
+    protected $response;
+
+
 
     /**
      * @param $settings
@@ -49,9 +67,21 @@ class Wso2idp implements IDPInterface
      */
     public function __construct($settings)
     {
-        // initiate settings (username, api_key, etc)
-
         $this->settings = (object) $settings;
+    }
+
+    public function userInfo($userID)
+    {
+        $AT = new Wso2IdpUsers($this->settings->base_url, $this->settings->username, $this->settings->password, $this->settings->idp_log );
+        $this->response = $AT->userInfo($userID);
+        return $this;
+    }
+
+    public function findUsers($userID)
+    {
+        $AT = new Wso2IdpUsers($this->settings->base_url, $this->settings->username, $this->settings->password, $this->settings->idp_log );
+        $this->response = $AT->findUsers($userID);
+        return $this;
     }
 
     /**
@@ -61,12 +91,10 @@ class Wso2idp implements IDPInterface
      *
      * @return object
      */
-    public function create(array $userInfo)
+    public function create($userInfo)
     {
-
-        $AT = new IDPGateway($this->settings->base_url, $this->settings->username, $this->settings->api_key, $this->settings->from);
-        $this->response = $AT->create();
-
+        $AT = new Wso2IdpUsers($this->settings->base_url, $this->settings->username, $this->settings->password, $this->settings->idp_log );
+        $this->response = $AT->create($userInfo);
         return $this;
     }
 
@@ -78,7 +106,63 @@ class Wso2idp implements IDPInterface
      */
     public function update(array $userInformation)
     {
+        $AT = new Wso2IdpUsers($this->settings->base_url, $this->settings->username, $this->settings->password, $this->settings->idp_log );
+        $this->response = $AT->update($userInformation);
+        return $this;
+    }
 
+
+    public function delete( $userInformation = null)
+    {
+        $AT = new Wso2IdpUsers($this->settings->base_url, $this->settings->username, $this->settings->password, $this->settings->idp_log );
+        $this->response = $AT->delete($userInformation);
+        return $this;
+    }
+
+
+    /**
+     * set response type
+     * @return $this
+     */
+    public function get()
+    {
+        if($this->onlyBody){
+            return $this->response['data'];
+        }
+        return $this->response;
+    }
+    /**
+     * set response type
+     * @return $this
+     */
+    public function asObject()
+    {
+      if($this->onlyBody){
+          return (object) $this->response['data'];
+      }
+        return (object) $this->response;
+    }
+
+    /**
+     * set response type
+     * @return $this
+     */
+    public function asJson()
+    {
+       if($this->onlyBody){
+           return json_encode ($this->response['data']);
+       }
+        return (object) $this->response;
+    }
+
+    /**
+     * set pertial response
+     * @return $this
+     */
+    public function onlyBody()
+    {
+        $this->onlyBody = true;
+        return $this;
     }
 
     /**
@@ -88,70 +172,33 @@ class Wso2idp implements IDPInterface
      */
     public function isSuccessful(): bool
     {
-        return $this->is_success;
-    }
-
-    /**
-     * initialize the getResponseBody parameter.
-     *
-     * @return bool
-     */
-    public function getResponseBody()
-    {
-        return $this->response;
+       return $this->response['status'];
     }
 
     /**
      * assign the message ID as received on the response,auto generate if not available.
      *
-     * @return mixed
+     * @return string
      */
     public function getResponseMessage()
     {
-        return $this->message;
+        return $this->response['message'];
     }
 
+    /**
+     * @return int
+     */
     public function getResponseCode()
     {
-        $this->response_code;
+        return $this->response['code'];
     }
 
+    /**
+     * @return mixed|string
+     */
     public function getUserID()
     {
         return $this->user_id;
-    }
-
-    /**
-     * auto generate if not available.
-     */
-    public function getBalance()
-    {
-        $AT = new IDPGateway($this->settings->base_url, $this->settings->username, $this->settings->api_key, $this->settings->from);
-        return $AT->balance();
-    }
-
-    /**
-     * @param Request $request
-     *
-     * @return object
-     */
-    public function getDeliveryReports(Request $request)
-    {
-        $status = $request->status;
-
-        if ($status == 'Failed' || $status == 'Rejected') {
-            $fs = $request->failureReason;
-        } else {
-            $fs = $status;
-        }
-
-        $data = [
-            'status'       => $fs,
-            'message_id'   => $request->id,
-            'phone_number' => '',
-        ];
-
-        return (object) $data;
     }
 
     public function fixNumber($number){
