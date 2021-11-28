@@ -1,110 +1,81 @@
 <?php
 
-namespace Khbd\LaravelWso2IdentityApiUser;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use  Khbd\LaravelWso2IdentityApiUser\SDK\Wso2Idp\Wso2Idp;
+return [
 
 
-class IdpUser
-{
-    /**
-     * SMS Configuration.
-     *
-     * @var null|object
-     */
-    protected $config = null;
+    /*
+    |--------------------------------------------------------------------------
+    | Enable IDP
+    |--------------------------------------------------------------------------
+    |
+    | This value determines that should take sms record in db or not
+    | You can switch to a different gateway at runtime.
+    | set value true to Record Log
+    |
+    */
 
-    /**
-     * Sms Gateway Settings.
-     *
-     * @var null|object
-     */
-    protected $settings = null;
-
-    /**
-     * Sms Gateway Name.
-     *
-     * @var null|string
-     */
-    protected $gateway = null;
-
-    /**
-     * @var object
-     */
-    protected $object = null;
-
-    /**
-     * @var array
-     */
-    protected $payload = null;
+    'idp_activate' => env('IDP_ENABLED', true),
 
 
-    /**
-     * IDP constructor.
-     *
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        $this->config = config('IdpUser');
-        $this->gateway = $this->config['default'];
-        $this->mapGateway();
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | Enable debug log
+    |--------------------------------------------------------------------------
+    |
+    | This value determines that should write log
+    | set value true to Record Log
+    |
+    */
 
-    public function __call($function, $args)
-    {
-            $payload = empty($args) ? [$this->payload]: $args;
-            return call_user_func_array([$this->object, $function], $payload);
-    }
+    'idp_log' => env('IDP_USER_DEBUG', true),
 
-    /**
-     * Change the sdk on the fly.
-     *
-     * @param $sdk
-     *
-     * @return $this
-     */
-    public function use($sdk)
-    {
-        $this->gateway = $sdk;
-        $this->mapGateway();
+    /*
+    |--------------------------------------------------------------------------
+    | Default idp
+    |--------------------------------------------------------------------------
+    |
+    | This value determines which of the following idp to use.
+    | You can switch to a different idp at runtime.
+    |
+    */
 
-        return $this;
-    }
+    'default' => env('DEFAULT_IDP', 'wso2idp'),
 
-    /**
-     * set request payload on the fly.
-     *
-     * @param $payload
-     *
-     * @return $this
-     */
-    public function setPayload($payload)
-    {
-        $this->payload = $payload;
-        return $this;
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | List of Gateways
+    |--------------------------------------------------------------------------
+    |
+    | These are the list of ip to use for this package.
+    | You can change the name. Then you'll have to change
+    | it in the map array too.
+    |
+    */
 
-    /****************
-     * Private functions
-     */
+    'gateways' => [
+        'wso2idp' => [
+            'base_url' => env('WSO2_IDP_BASE_URL' ),
+            'username' => env('WSO2_IDP_USERNAME' ),
+            'password' => env('WSO2_IDP_PASSWORD')
+        ],
+    ],
 
-    /**
-     *map the gateway that will be used to send.
-     */
-    private function mapGateway()
-    {
-        $this->settings = $this->config['gateways'][$this->gateway];
-        $this->settings['idp_log'] = $this->config['idp_log'];
-        $class = $this->config['map'][$this->gateway];
 
-        if(is_callable([$class, '__construct'], true, $callable_name)){
-            $this->object = new $class($this->settings);
-        }else{
-            throw new \Exception("Unknown SDK. Make sure you have defined the sdk in the config file.", 422);
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Class Maps
+    |--------------------------------------------------------------------------
+    |
+    | This is the array of Classes that maps to IDP above.
+    | You can create your own driver if you like and add the
+    | config in the drivers array and the class to use
+    | here with the same name. You will have to implement
+    | Khbd\LaravelWso2IdentityApiUser\Interfaces\IDPInterface in your IDP.
+    |
+    */
 
-    }
-}
+    'map' => [
+        'wso2idp' => \Khbd\LaravelWso2IdentityApiUser\Idps\Wso2idp::class
+
+    ],
+];
