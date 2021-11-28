@@ -9,6 +9,7 @@ You can install the package via composer:
 ``` bash
 composer require khbd/laravel-wso2-identity-api-user
 ```
+##Laravel Usage
 The package will register itself automatically.
 
 Then publish the package configuration file
@@ -20,7 +21,18 @@ or
 ```bash
 php artisan vendor:publish --provider=Khbd\LaravelWso2IdentityApiUser\IdpServiceProvider  --tag="idpuser"
 ```
+##Lumen Usage
+For Lumen usage the service provider should be registered manually as follow in bootstrap/app.php:
 
+```bash
+$app->register(Khbd\LaravelWso2IdentityApiUser\IdpUserServiceProvider::class);
+
+```
+Copy <a href="https://github.com/tasmidur/laravel-wso2-identity-api-user/blob/main/src/Config/IdpUser.php">IdpUser</a> file to config directory. Then add the bellow text to the bootstrap/app.php:
+
+```bash
+$app->configure('IdpUser');
+```
 ## Usage
 
 Check the config file of all variables required, and then
