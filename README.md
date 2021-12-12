@@ -166,7 +166,7 @@ So .env config is following -
 DEFAULT_IDP = 'wso2idp' #set default idp 
 
 # add your wso2 idp information
-WSO2_IDP_BASE_URL = 'http://wso2.com' // Note:: Do not include / after the base url
+WSO2_IDP_BASE_URL = 'http://wso2.com' # Note:: Do not include / after the base url
 WSO2_IDP_USERNAME = 'admin'
 WSO2_IDP_PASSWORD = 'admin'
 
