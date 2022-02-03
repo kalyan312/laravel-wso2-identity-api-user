@@ -125,18 +125,21 @@ _you can provide single field or multiple field at the same time_
 ```
 here `id` and `username` is mendatory. You can provide following field to update & create - 
 
-| Key | Details |
-| ------ | ------ |
-| first_name | Update `givenName` |
-| last_name | [Update `familyName` |
-| email | Update  `emails` |
-| mobile | Update `phoneNumbers` |
-| user_type | Update `userType`|
-| account_status | Update `accountStatus` |
-| department | Update `department` |
-| organization | Update `organization` |
-| country | Update `country` |
-| password | Update `password` |
+| Key             | Data Type               |Details                 |
+|-----------------|-------------------------|------------------------|
+| first_name      | string                  |Update `givenName`      |
+| last_name       | string                  |[Update `familyName`    |
+| password        | string                  |Update `password`       |
+| email           | email                   |Update  `emails`        |
+| mobile          | string                  |Update `phoneNumbers`   |
+| user_type       | integer                 |Update `userType`       |
+| birthdate       | ISO_OFFSET_DATE_TIME [2018-10-03T07:24:14.772+03:00] |[Update `familyName`    |
+| account_disable | boolean                 |Update `accountDisabled` |
+| account_lock    | boolean                 |Update `accountLocked` |
+| account_state   | string                  |Update `accountState`   |
+| department      | string                  |Update `department`     |
+| organization    | string                  |Update `organization`   |
+| country         | string                  |Update `country`        |
 
 
 >4. Delete single/bulk IDP User
@@ -159,21 +162,18 @@ here - `$userID` can be single user ID or array of user ID.
 
 ## .env Config
 
-Currently Default SMS Gateway is [Bangladesh SMS](http://bangladeshsms.com/)
-
 So .env config is following -
 ```bash
 DEFAULT_IDP = 'wso2idp' #set default idp 
 
 # add your wso2 idp information
-WSO2_IDP_BASE_URL = 'http://wso2.com' # Note:: Do not include / after the base url
+WSO2_IDP_BASE_URL = 'http://wso2.com'
 WSO2_IDP_USERNAME = 'admin'
 WSO2_IDP_PASSWORD = 'admin'
 
 IDP_ENABLED = true # true = if you want to enable functionality of idp
 IDP_USER_DEBUG = true  # true = if you want to save log in file
 ```
->>  Note:: Do not include / after the base url
 
 ## Contributing
 

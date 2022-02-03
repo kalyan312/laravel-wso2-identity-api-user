@@ -4,6 +4,7 @@ namespace Khbd\LaravelWso2IdentityApiUser\SDK\Wso2Idp;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\Response;
+use function PHPUnit\Framework\isNull;
 
 class IdpGlobal
 {
@@ -140,11 +141,15 @@ class IdpGlobal
         $mobile = $userinfo['mobile'] ?? null;
         $user_type = $userinfo['user_type'] ?? null;
         $active = $userinfo['active'] ?? true;
-        $accountState = $userinfo['account_status'] ?? 'UNLOCKED';
+        $accountState = $userinfo['account_state'] ?? 'UNLOCKED';
         $department = $userinfo['department'] ?? null;
         $organization = $userinfo['organization'] ?? null;
         $country = $userinfo['country'] ?? 'Bangladesh';
         $password = $userinfo['password'] ?? '12345678';
+        $birthDate = $userinfo['birthdate'] ?? null;
+        $isAccountDisabled = isset($userinfo['account_disable']) ? ($userinfo['account_disable'] == 1 ? true : false) : null;
+        $isAccountLocked = isset($userinfo['account_lock']) ? ($userinfo['account_lock'] == 1 ? true : false) : null;
+
 
         if(empty($first_name) || empty($last_name) || empty($username) || empty($email) || empty($mobile) || empty($user_type) || empty($active)){
             $this->logInfo("missing necessary user property. Provided user Info - ", (array) $userinfo);
@@ -155,23 +160,27 @@ class IdpGlobal
             $this->logInfo("Invalid provided email. Provided user Info - ", (array) $userinfo);
             throw new \Exception("Invalid provided email", 422);
         }
-
-        return [
+        $payload = [
             'schemas' => [
                 "urn:ietf:params:scim:schemas:core:2.0:User",
                 "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
             ],
             'name' => [
-                'familyName' => $first_name,
-                'givenName' => $last_name,
+                'familyName' => $last_name,
+                'givenName' => $first_name,
             ],
-            'organization' => $organization,
+
             'userName' => $username,
             'active' => $active,
             'password' => $password,
             'userType' => $user_type,
-            'country' => $country,
-            'accountState' => $accountState,
+            'urn:ietf:params:scim:schemas:extension:enterprise:2.0:User' => [
+                'accountDisabled' => $isAccountDisabled,
+                'accountLocked' => $isAccountLocked,
+                'department' => $department,
+                'country' => $country,
+                'organization' => $organization
+            ],
             'emails' => [
                 0 => $email
             ],
@@ -183,6 +192,12 @@ class IdpGlobal
                 ]
             ]
         ];
+
+        if(!empty($birthDate)){
+            $payload['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['dateOfBirth'] = $birthDate;
+        }
+
+        return $payload;
     }
 
     public function prepareUserInfoToBeUpdated($userinfo)
@@ -194,11 +209,15 @@ class IdpGlobal
         $email = $userinfo['email'] ?? null;
         $mobile = $userinfo['mobile'] ?? null;
         $user_type = $userinfo['user_type'] ?? null;
-        $account_status = $userinfo['account_status'] ?? 'UNLOCKED';
+        $active = $userinfo['active'] ?? null;
+        $account_status = $userinfo['account_status'] ?? null;
         $department = $userinfo['department'] ?? null;
         $organization = $userinfo['organization'] ?? null;
-        $country = $userinfo['country'] ?? 'Bangladesh';
+        $country = $userinfo['country'] ?? null;
         $password = $userinfo['password'] ?? null;
+        $isAccountDisabled = isset($userinfo['account_disable']) ? ($userinfo['account_disable'] == 1 ? true : false) : null;
+        $isAccountLocked = isset($userinfo['account_lock']) ? ($userinfo['account_lock'] == 1 ? true : false) : null;
+        $birthDate = $userinfo['birthdate'] ?? null;
 
         if(empty($ID)){
             $this->logInfo("missing user ID. Provided user Info - ", (array) $userinfo);
@@ -230,24 +249,37 @@ class IdpGlobal
             $values['name']['familyName'] = $last_name;
         }
 
-        if(in_array($account_status, ['0', '1', '2', '3', '4', '5'])){
+        if($isAccountDisabled !== null){
             # more about account state https://is.docs.wso2.com/en/latest/learn/pending-account-status/
-          // $values['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['accountState'] =  '1';
+            # also another way to set payload curl -v -k --user admin:admin -X PATCH -d '{"schemas":["urn:ietf:params:scim:api:messages:2.0:PatchOp"],"Operations":[{"op":"replace","path":"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:accountLocked", "value": true}]}' --header "Content-Type:application/json" https://identity.com/scim2/Users/id
+           $values['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['accountDisabled'] =  $isAccountDisabled;
+        }
+        if($isAccountLocked !== null){
+            # more about account state https://is.docs.wso2.com/en/latest/learn/pending-account-status/
+           $values['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['accountLocked'] =  $isAccountLocked;
         }
         if(!empty($organization)){
             $values['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['organization'] =  $organization;
         }
+        if(!empty($department)){
+            $values['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['department'] =  $department;
+        }
         if(!empty($country)){
             $values['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['country']= $country;
         }
-
-
+        if(!empty($birthDate)){
+            $values['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['dateOfBirth']= $birthDate;
+        }
         if(!empty($password)){
             $values['password'] =  $password;
         }
 
         if(!empty($user_type)){
             $values['userType'] = $user_type;
+        }
+
+        if(!empty($active)){
+            $values['active'] = (string) $active;
         }
 
         if(!empty($email)){
@@ -264,12 +296,16 @@ class IdpGlobal
                ]
             ];
         }
+        if(empty($values)){
+            $this->logInfo("Update value can not be empty, please add something to update");
+            throw new \Exception("Empty value provided, Nothing to update.", 422);
+        }
         $payload['Operations'][] = [
             "op" => "replace",
             "value" => $values
         ];
 
-        Log::debug(json_encode( $payload));
+        Log::debug("update payload", $payload);
 
         return $payload;
     }

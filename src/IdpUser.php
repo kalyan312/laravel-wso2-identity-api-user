@@ -97,6 +97,7 @@ class IdpUser
     private function mapGateway()
     {
         $this->settings = $this->config['idps'][$this->gateway];
+        $this->settings["base_url"] = rtrim($this->settings["base_url"], "/");
         $this->settings['idp_log'] = $this->config['idp_log'];
         $class = $this->config['map'][$this->gateway];
 
