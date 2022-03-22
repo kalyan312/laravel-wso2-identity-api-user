@@ -142,7 +142,9 @@ here `id` and `username` is mendatory. You can provide following field to update
 | country         | string                  |Update `country`        |
 
 
->4. Delete single/bulk IDP User
+## 4. Delete single/bulk IDP User
+
+   _provide user `single id` to delete single user or provide `array of user id` to delete bulk user from `IDP`_
 
 ```
         $userID = 'ID';
@@ -153,9 +155,37 @@ here `id` and `username` is mendatory. You can provide following field to update
         ->get();
 
 ```
-here - `$userID` can be single user ID or array of user ID. 
+*here - `$userID` can be single user ID or array of user ID.*
+
+## 5. Reset password of users 
+> user api, do not need admin permission
+
+   _as a param pass a array of user crediantials like following example -_
+
+```
+   $response = IdpUser()->setPayload([
+        'current_password' => 'kalyan111',
+        'username'         => '01521212121',
+        'new_password'     => 'newPass'
+    ])->userResetPassword()->get();
+
+```
 
 
+
+## 5. find user list
+> query users from IDP
+
+   _as a param pass a array of filter like following example -_
+
+```
+    $response = IdpUser()->setPayload([
+        'page' => 1,
+        'count' => 10,
+        'filter' => ''
+    ])->findUsers()->get();
+
+```
 
 
 ## Adding new Gateway

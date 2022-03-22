@@ -78,6 +78,27 @@ class Wso2IdpUsers extends IdpGlobal
         }
     }
 
+    public function userResetPassword($userCrediantialInfo){
+        try {
+            $payload = $this->preparePasswordResetSchema($userCrediantialInfo);
+            $this->logInfo("payload", $payload);
+            $response = Http::withBasicAuth($userCrediantialInfo['username'], $userCrediantialInfo['current_password'])
+                ->withHeaders([
+                    'Content-Type' => 'application/json'
+                ])
+                ->withOptions([
+                    'verify' => false
+                ])
+                ->patch($this->endpointUserPasswordReset(), $payload);
+        } catch (\Exception $exception){
+            $exceptionInfo =  $this->response($exception->getMessage(), $userCrediantialInfo, $exception->getCode(), false);
+            $this->logInfo($exception->getMessage(), $exceptionInfo);
+            
+            return $exceptionInfo;
+        }
+        return $this->prepareResponse($response, $userCrediantialInfo, ($response->status() == 401 ? "Username or password is incorrect. Please try with correct username or password." : null));
+    }
+
     public function findUsers($filter){
         try {
             if(empty($filter)){

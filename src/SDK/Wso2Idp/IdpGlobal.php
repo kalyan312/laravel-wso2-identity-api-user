@@ -34,11 +34,17 @@ class IdpGlobal
     public function endpointUserInfo($userID){
         return $this->apiUrl . '/scim2/Users/'.$userID;
     }
+
     public function endpointUserCreate(){
         return $this->apiUrl . '/scim2/Users';
     }
+
     public function endpointUserUpdate($userID){
         return $this->apiUrl . '/scim2/Users/' . $userID;
+    }
+
+    public function endpointUserPasswordReset(){
+        return $this->apiUrl . '/scim2/Me';
     }
 
     public function endpointUserFiltering($args){
@@ -111,6 +117,10 @@ class IdpGlobal
                         'is_clientErro' => $response->clientError(),
                         'headers' => $response->headers(),
                     ]);
+                }
+
+                if(!empty($customMessage)){
+                    $message = $customMessage;
                 }
 
                 if(empty($data) && !empty($response->json())){
@@ -196,6 +206,35 @@ class IdpGlobal
         if(!empty($birthDate)){
             $payload['urn:ietf:params:scim:schemas:extension:enterprise:2.0:User']['dateOfBirth'] = $birthDate;
         }
+
+        return $payload;
+    }
+
+    public function preparePasswordResetSchema($userCrediantialInfo)
+    {
+        $currentPassword = $userCrediantialInfo['current_password'] ?? null;
+        $username = $userCrediantialInfo['username'] ?? null;
+        $newPassword = $userCrediantialInfo['new_password'] ?? null;
+
+
+        if(empty($currentPassword) || empty($username) || empty($newPassword)){
+            $this->logInfo("missing necessary user crediantial. Provided user crediantial - ", (array) $userCrediantialInfo);
+            throw new \Exception("username or password or new password missing", 422);
+        }
+
+        $payload = [
+            'schemas' => [
+                "urn:ietf:params:scim:api:messages:2.0:PatchOp"
+            ],
+            'Operations' => [
+                [
+                    "op" => "add",
+                    "value" => [
+                        "password" => $newPassword
+                    ]
+                ]
+            ]
+        ];
 
         return $payload;
     }

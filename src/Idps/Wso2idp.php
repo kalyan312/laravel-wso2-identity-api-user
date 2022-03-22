@@ -111,6 +111,17 @@ class Wso2idp implements IDPInterface
         return $this;
     }
 
+    /**
+     * /me endpoint
+     * this endpoint to update password
+     */
+    public function userResetPassword($userCrediantialInfo)
+    {
+        $AT = new Wso2IdpUsers($this->settings->base_url, $this->settings->username, $this->settings->password, $this->settings->idp_log );
+        $this->response = $AT->userResetPassword($userCrediantialInfo);
+        return $this;
+    }
+
 
     public function delete( $userInformation = null)
     {
