@@ -52,7 +52,7 @@ class IdpGlobal
         $countPerPage = $args['count'] ?? 10;
         $filter = null;
         if(isset($args['filter'])){
-            '&filter='. $args['filter'];
+            $filter .= '&filter=' . $args['filter'];
         }
         $startFrom = ($pageNo -1) * $countPerPage;
 
