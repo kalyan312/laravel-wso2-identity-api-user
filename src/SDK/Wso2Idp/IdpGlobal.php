@@ -54,6 +54,12 @@ class IdpGlobal
         if(isset($args['filter'])){
             $filter .= '&filter=' . $args['filter'];
         }
+        if(isset($args['filter']) && isset($args['excludedAttributes']) ){
+            $filter .= '&excludedAttributes=' . $args['excludedAttributes'];
+        }
+        if(isset($args['filter']) && isset($args['attributes']) ){
+            $filter .= '&attributes=' . $args['attributes'];
+        }
         $startFrom = ($pageNo -1) * $countPerPage;
 
         return $this->apiUrl .'/scim2/Users?startIndex=' . $startFrom . '&count=' . $countPerPage.$filter;
