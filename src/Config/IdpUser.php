@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'idps' => [
+    'gateways' => [
         'wso2idp' => [
             'base_url' => env('WSO2_IDP_BASE_URL'),
             'username' => env('WSO2_IDP_USERNAME'),
