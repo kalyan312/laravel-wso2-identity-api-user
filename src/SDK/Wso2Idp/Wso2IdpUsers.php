@@ -12,9 +12,10 @@ class Wso2IdpUsers extends IdpGlobal
 
     public function create($userData){
         try {
+            set_time_limit(0);
             $payload = $this->prepareUserInfoToBeCreated($userData);
 
-            $response = Http::withBasicAuth($this->getApiUsername(), $this->getAPIPassword())
+            $response = Http::timeout(300)->retry(3, 2000)->withBasicAuth($this->getApiUsername(), $this->getAPIPassword())
                 ->withHeaders([
                     'Content-Type' => 'application/json'
                 ])
@@ -35,7 +36,7 @@ class Wso2IdpUsers extends IdpGlobal
         try {
             $payload = $this->prepareUserInfoToBeUpdated($userData);
 
-            $response = Http::withBasicAuth($this->getApiUsername(), $this->getAPIPassword())
+            $response = Http::timeout(300)->retry(3, 2000)->withBasicAuth($this->getApiUsername(), $this->getAPIPassword())
                 ->withHeaders([
                     'Content-Type' => 'application/json'
                 ])
@@ -55,12 +56,13 @@ class Wso2IdpUsers extends IdpGlobal
 
     public function userInfo($userID){
         try {
+            set_time_limit(0);
             if(empty($userID)){
                 $this->logInfo("missing user ID.");
                 throw new \Exception("ID is mendatory.", 422);
             }
 
-            $response = Http::withBasicAuth($this->getApiUsername(), $this->getAPIPassword())
+            $response = Http::timeout(300)->retry(3, 2000)->withBasicAuth($this->getApiUsername(), $this->getAPIPassword())
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/scim+json'
@@ -101,6 +103,7 @@ class Wso2IdpUsers extends IdpGlobal
 
     public function findUsers($filter){
         try {
+            set_time_limit(0);
             if(empty($filter)){
                 $filter = [
                     'page' => 1,
@@ -112,7 +115,7 @@ class Wso2IdpUsers extends IdpGlobal
                 unset($filter['filter']);
             }
 
-            $response = Http::withBasicAuth($this->getApiUsername(), $this->getAPIPassword())
+            $response = Http::timeout(300)->retry(3, 2000)->withBasicAuth($this->getApiUsername(), $this->getAPIPassword())
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/scim+json'
